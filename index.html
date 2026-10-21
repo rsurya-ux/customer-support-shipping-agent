@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SwiftShip Customer Support AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --primary-light: #eff6ff;
+      --accent: #f59e0b;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --surface-border: #e2e8f0;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --bot-msg-bg: #f1f5f9;
+      --user-msg-bg: #2563eb;
+      --user-msg-text: #ffffff;
+      --radius: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, #f0f4ff 0%, #e2e8f0 100%);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 16px;
+    }
+
+    .chat-container {
+      width: 100%;
+      max-width: 860px;
+      height: 92vh;
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.1), 0 0 1px 1px rgba(0, 0, 0, 0.05);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid var(--surface-border);
+    }
+
+    /* Header */
+    .chat-header {
+      padding: 16px 24px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--surface-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 10;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, #2563eb 0%, #38bdf8 100%);
+      color: white;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+    }
+
+    .brand-info h1 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .badge {
+      font-size: 0.72rem;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-weight: 600;
+      background: #dcfce7;
+      color: #15803d;
+      border: 1px solid #bbf7d0;
+    }
+
+    .brand-info p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .icon-btn {
+      background: transparent;
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+      font-family: inherit;
+    }
+
+    .icon-btn:hover {
+      background: var(--bot-msg-bg);
+      color: var(--text);
+    }
+
+    /* Free Shipping Banner */
+    .banner {
+      background: linear-gradient(90deg, #fef3c7 0%, #fee2e2 100%);
+      color: #92400e;
+      font-size: 0.82rem;
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-weight: 600;
+      border-bottom: 1px solid #fde68a;
+    }
+
+    /* Message Area */
+    .messages-area {
+      flex: 1;
+      padding: 20px 24px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      scroll-behavior: smooth;
+    }
+
+    .message-row {
+      display: flex;
+      gap: 12px;
+      max-width: 85%;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message-row.user {
+      align-self: flex-end;
+      flex-direction: row-reverse;
+    }
+
+    .message-row.bot {
+      align-self: flex-start;
+    }
+
+    .avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .message-row.bot .avatar {
+      background: #e0f2fe;
+      color: #0369a1;
+      border: 1px solid #bae6fd;
+    }
+
+    .message-row.user .avatar {
+      background: #e2e8f0;
+      color: #475569;
+    }
+
+    .message-bubble {
+      padding: 12px 18px;
+      border-radius: 16px;
+      font-size: 0.92rem;
+      line-height: 1.55;
+    }
+
+    .message-row.bot .message-bubble {
+      background: var(--bot-msg-bg);
+      color: var(--text);
+      border-top-left-radius: 4px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .message-row.user .message-bubble {
+      background: var(--user-msg-bg);
+      color: var(--user-msg-text);
+      border-top-right-radius: 4px;
+    }
+
+    .message-bubble p {
+      margin-bottom: 8px;
+    }
+    .message-bubble p:last-child {
+      margin-bottom: 0;
+    }
+    .message-bubble ul, .message-bubble ol {
+      margin: 8px 0 8px 20px;
+    }
+    .message-bubble li {
+      margin-bottom: 4px;
+    }
+    .message-bubble strong {
+      font-weight: 600;
+    }
+    .message-bubble hr {
+      border: 0;
+      border-top: 1px solid #cbd5e1;
+      margin: 12px 0;
+    }
+
+    /* Typing indicator */
+    .typing-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 10px 16px;
+      background: var(--bot-msg-bg);
+      border-radius: 16px;
+      border-top-left-radius: 4px;
+    }
+
+    .typing-dot {
+      width: 7px;
+      height: 7px;
+      background: #94a3b8;
+      border-radius: 50%;
+      animation: bounce 1.3s infinite ease-in-out;
+    }
+
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes bounce {
+      0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+      40% { transform: scale(1); opacity: 1; }
+    }
+
+    /* Starter chips */
+    .chips-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 0 24px 12px 24px;
+    }
+
+    .chip-btn {
+      background: var(--surface);
+      border: 1px solid #cbd5e1;
+      border-radius: 999px;
+      padding: 6px 14px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: #334155;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      font-family: inherit;
+    }
+
+    .chip-btn:hover {
+      background: #e0f2fe;
+      border-color: #38bdf8;
+      color: #0369a1;
+      transform: translateY(-1px);
+    }
+
+    /* Input area */
+    .input-area {
+      padding: 14px 24px 20px 24px;
+      border-top: 1px solid var(--surface-border);
+      background: var(--surface);
+    }
+
+    .input-form {
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+    }
+
+    .input-box {
+      flex: 1;
+      position: relative;
+    }
+
+    .chat-input {
+      width: 100%;
+      max-height: 120px;
+      min-height: 48px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      border: 1.5px solid #cbd5e1;
+      font-family: inherit;
+      font-size: 0.92rem;
+      resize: none;
+      outline: none;
+      line-height: 1.4;
+      transition: border-color 0.15s ease;
+    }
+
+    .chat-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    .send-btn {
+      height: 48px;
+      padding: 0 20px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+      font-family: inherit;
+      flex-shrink: 0;
+    }
+
+    .send-btn:hover:not(:disabled) {
+      background: var(--primary-hover);
+      box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
+    }
+
+    .send-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Modal for API Key */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.55);
+      backdrop-filter: blur(4px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      background: white;
+      width: 90%;
+      max-width: 480px;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    }
+
+    .modal-card h2 {
+      font-size: 1.25rem;
+      margin-bottom: 8px;
+    }
+
+    .modal-card p {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 16px;
+    }
+
+    .modal-input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      margin-bottom: 16px;
+      font-family: monospace;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .btn-secondary {
+      background: #f1f5f9;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="chat-container">
+    <!-- Header -->
+    <header class="chat-header">
+      <div class="brand">
+        <div class="brand-icon">📦</div>
+        <div class="brand-info">
+          <h1>SwiftShip Support AI <span class="badge">Active & Guarded 🛡️</span></h1>
+          <p>Instant shipping rates, delivery tracking, and returns</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="icon-btn" id="apiKeyBtn" title="Set Gemini API Key">
+          🔑 <span id="apiKeyBtnText">API Key</span>
+        </button>
+        <button class="icon-btn" id="clearBtn" title="Reset Conversation">
+          🔄 Reset
+        </button>
+      </div>
+    </header>
+
+    <!-- Promotional / Value Prop Banner -->
+    <div class="banner">
+      ✨ <strong>Good News Alert:</strong> All eligible domestic orders over <strong>$50</strong> qualify for <strong>100% FREE Standard Shipping</strong>! 🎁
+    </div>
+
+    <!-- Messages List -->
+    <main class="messages-area" id="messagesArea">
+      <!-- Default Greeting -->
+      <div class="message-row bot">
+        <div class="avatar">🤖</div>
+        <div class="message-bubble">
+          <p>👋 Hello and welcome to <strong>SwiftShip Customer Support</strong>! 🚀</p>
+          <p>I'm your dedicated logistics assistant. I can help you with:</p>
+          <ul>
+            <li>📦 <strong>Instant Shipping Quotes & Rates</strong> (Domestic & International)</li>
+            <li>📍 <strong>Package Tracking & ETA Updates</strong></li>
+            <li>⚡ <strong>Express & Priority Delivery Options</strong></li>
+            <li>🏷️ <strong>Return Labels & Claims</strong></li>
+          </ul>
+          <p><em>How can I assist your shipment today?</em> ✨</p>
+        </div>
+      </div>
+    </main>
+
+    <!-- Suggested Starter Chips -->
+    <div class="chips-container" id="chipsContainer">
+      <button class="chip-btn" data-query="What are your standard and express shipping rates?">📦 What are your shipping rates?</button>
+      <button class="chip-btn" data-query="How long does standard delivery take?">⏱️ How long does delivery take?</button>
+      <button class="chip-btn" data-query="I need to return an item, how do I get a return label?">🏷️ How do I return a package?</button>
+      <button class="chip-btn" data-query="What is the weather like in Timbuktu?">☀️ Weather in Timbuktu (Guardrail Test)</button>
+    </div>
+
+    <!-- Input Form -->
+    <footer class="input-area">
+      <form class="input-form" id="chatForm">
+        <div class="input-box">
+          <textarea
+            class="chat-input"
+            id="chatInput"
+            placeholder="Ask about rates, tracking, delivery times, or returns..."
+            rows="1"
+          ></textarea>
+        </div>
+        <button type="submit" class="send-btn" id="sendBtn">
+          Send 🚀
+        </button>
+      </form>
+    </footer>
+  </div>
+
+  <!-- API Key Modal -->
+  <div class="modal-overlay" id="apiModal">
+    <div class="modal-card">
+      <h2>🔑 Gemini API Key Required</h2>
+      <p>
+        This web chat runs client-side directly against Google's <strong>Gemini 2.5 Flash</strong> model. Your key is stored locally in your browser's <code>localStorage</code> and never sent to any third-party server.
+      </p>
+      <p>
+        Don't have a key? Get one for free at <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: var(--primary);">Google AI Studio</a>.
+      </p>
+      <input
+        type="password"
+        class="modal-input"
+        id="apiKeyInput"
+        placeholder="AIzaSy..."
+        autocomplete="off"
+      />
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" id="cancelModalBtn">Cancel</button>
+        <button type="button" class="btn-primary" id="saveKeyBtn">Save & Start Chatting</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // System Instruction with Domain Boundaries & Playful Tone
+    const SYSTEM_INSTRUCTION = `You are an expert, proactive customer support representative for SwiftShip, a premier global shipping and logistics company.
+
+STRICT DOMAIN SCOPE & GUARDRAILS:
+1. EXCLUSIVELY A SHIPPING & LOGISTICS ASSISTANT:
+   - Your sole responsibility is SwiftShip services: shipping rates, package tracking, delivery transit times, customs/tariffs, returns, package specifications, and courier pickup scheduling.
+   - Absolutely NEVER provide information, answers, explanations, or analysis on subjects outside of shipping logistics.
+
+2. FORBIDDEN OFF-TOPIC SUBJECTS (NEVER ANSWER):
+   - Weather, climate, seasonal temperatures, rainfall, wind, or meteorological reports.
+   - Linguistics, etymology, language roots, or historical origins of city or country names (e.g., the name origin or history of "Timbuktu", "Vladivostok", etc.).
+   - General history, culture, politics, geography, or tourist sights.
+   - Personal travel itineraries, hotel bookings, or recommendations on vehicles/transportation (e.g. recommending 4x4 vehicles).
+   - Coding, software development, math puzzles, recipes, jokes, poems, or general trivia.
+
+3. HOW TO HANDLE PRETEXT OR MIXED OFF-TOPIC INQUIRIES:
+   - Even if the customer claims they need this information to arrange a pickup, travel, or ship a package:
+     * POLITELY REFUSE the off-topic request: "As a SwiftShip customer support representative, I am unable to provide [weather / etymology / travel / etc.] information."
+     * If they also asked a legitimate shipping question (such as scheduling courier pickup hours or package rates), address ONLY the shipping part. Otherwise, invite them to share their shipment details (origin, destination, weight, dimensions) so you can assist with their shipping needs.
+
+CRITICAL INSTRUCTIONS FOR CONVERSATION MEMORY:
+1. ALWAYS REVIEW ENTIRE CHAT HISTORY:
+   - Carefully review all previous turns in this conversation.
+   - NEVER ask the customer for information they have ALREADY shared earlier in the chat (such as origin city, destination city, package weight, dimensions, or service type).
+   - If the user already told you origin is Timbuktu and destination is Vladivostok, REMEMBER IT! Never ask for it again.
+
+2. PLAYFUL & ENTHUSIASTIC SHIPPING RATES (WITH EMOJIS & FREE SHIPPING THRESHOLD):
+   - Whenever discussing shipping rates, pricing, quotes, or options, adopt a cheerful, playful, and enthusiastically helpful tone! 🚀📦
+   - Sprinkle vibrant emojis throughout (e.g., 📦, 🚀, ✈️, ✨, 🎉, 💨, 🏷️, 💸).
+   - HIGHLIGHT THE FREE SHIPPING THRESHOLD: Prominently celebrate that qualifying orders or shipments over $50 get **FREE Standard Ground Shipping**! (e.g., "🎉 *Pro-tip: Any eligible shipment or order over $50 qualifies for FREE Standard Ground Shipping!* ✨").
+   - When a customer has provided origin, destination, weight, and dimensions, immediately calculate and provide a clear, realistic price bracket and delivery window for available service tiers (e.g. 🚚 Standard Ground, ⚡ 2-Day Express, ✈️ Swift Worldwide Priority).
+   - Include billing weight explanation (actual weight vs. dimensional weight) if relevant.
+   - Note customs clearance guidelines and required documents for international shipments.
+
+3. CONVERSATIONAL EMPATHY & CLARITY:
+   - If a customer mentions they already answered a question or expresses frustration, apologize sincerely, immediately utilize their details, and deliver the answer.
+   - Keep answers structured with bullet points, clean formatting, and clear next steps.`;
+
+    const DECLINE_MESSAGE = `Thank you for contacting SwiftShip Customer Support! I specialize exclusively in shipping services, such as shipping rates, package tracking, delivery schedules, and returns. 
+
+Because your question is unrelated to our shipping services, I am unable to assist with it. If you have any questions regarding a package or shipment, please feel free to ask! 📦`;
+
+    // Regex classifier matching app/agent.py
+    const SHIPPING_REGEX = /\b(ship|shipping|shipment|shipped|rate|rates|quote|pricing|postage|track|tracking|transit|deliver|delivery|delivered|arrival|return|returns|returning|refund|refunds|exchange|exchanges|package|packages|parcel|parcels|freight|cargo|fedex|ups|usps|dhl|lost|damaged|delay|delayed|missing|pickup|dropoff|drop-off|customs|warehouse|ground|overnight|express|priority)\b/i;
+    const UNRELATED_REGEX = /\b(weather|forecast|rain|snow|temperature|climate|etymology|linguistic|origin of the name|meaning of the word|name origin|history of|historical|culture|tourist|tourism|sightseeing|hotel|vacation|localtravel|travel plan|president|prime minister|election|senate|politics|government|recipe|cook|cookies|baking|dinner|food|restaurant|write.*code|python|algorithm|linked list|programming|tell.*joke|poem|story|song|riddle|capital of|population of|who is|who was)\b/i;
+
+    // Chat history state
+    let history = [];
+
+    // DOM Elements
+    const messagesArea = document.getElementById('messagesArea');
+    const chatForm = document.getElementById('chatForm');
+    const chatInput = document.getElementById('chatInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const apiKeyBtn = document.getElementById('apiKeyBtn');
+    const apiKeyBtnText = document.getElementById('apiKeyBtnText');
+    const clearBtn = document.getElementById('clearBtn');
+    const apiModal = document.getElementById('apiModal');
+    const apiKeyInput = document.getElementById('apiKeyInput');
+    const saveKeyBtn = document.getElementById('saveKeyBtn');
+    const cancelModalBtn = document.getElementById('cancelModalBtn');
+    const chipsContainer = document.getElementById('chipsContainer');
+
+    function getApiKey() {
+      return localStorage.getItem('SWIFTSHIP_GEMINI_KEY') || '';
+    }
+
+    function setApiKey(key) {
+      if (key) {
+        localStorage.setItem('SWIFTSHIP_GEMINI_KEY', key);
+        apiKeyBtnText.textContent = 'Key Active ✓';
+      } else {
+        localStorage.removeItem('SWIFTSHIP_GEMINI_KEY');
+        apiKeyBtnText.textContent = 'API Key';
+      }
+    }
+
+    // Initialize Key Display
+    if (getApiKey()) {
+      apiKeyBtnText.textContent = 'Key Active ✓';
+    }
+
+    // Modal Events
+    apiKeyBtn.addEventListener('click', () => {
+      apiKeyInput.value = getApiKey();
+      apiModal.classList.add('active');
+      apiKeyInput.focus();
+    });
+
+    cancelModalBtn.addEventListener('click', () => {
+      apiModal.classList.remove('active');
+    });
+
+    saveKeyBtn.addEventListener('click', () => {
+      const key = apiKeyInput.value.trim();
+      if (key) {
+        setApiKey(key);
+        apiModal.classList.remove('active');
+      } else {
+        alert('Please enter a valid Gemini API Key.');
+      }
+    });
+
+    clearBtn.addEventListener('click', () => {
+      if (confirm('Start a fresh conversation?')) {
+        history = [];
+        messagesArea.innerHTML = `
+          <div class="message-row bot">
+            <div class="avatar">🤖</div>
+            <div class="message-bubble">
+              <p>👋 Conversation reset! How can SwiftShip assist with your delivery or quote today? 📦✨</p>
+            </div>
+          </div>
+        `;
+      }
+    });
+
+    // Chips click handler
+    chipsContainer.addEventListener('click', (e) => {
+      const btn = e.target.closest('.chip-btn');
+      if (!btn) return;
+      const query = btn.dataset.query;
+      chatInput.value = query;
+      handleSendMessage(query);
+    });
+
+    // Auto-resize textarea
+    chatInput.addEventListener('input', () => {
+      chatInput.style.height = 'auto';
+      chatInput.style.height = Math.min(chatInput.scrollHeight, 120) + 'px';
+    });
+
+    chatInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        chatForm.dispatchEvent(new Event('submit'));
+      }
+    });
+
+    // Append Message UI
+    function appendMessage(role, text) {
+      const row = document.createElement('div');
+      row.className = `message-row ${role}`;
+
+      const avatar = document.createElement('div');
+      avatar.className = 'avatar';
+      avatar.textContent = role === 'user' ? '👤' : '🤖';
+
+      const bubble = document.createElement('div');
+      bubble.className = 'message-bubble';
+      bubble.innerHTML = marked.parse(text);
+
+      row.appendChild(avatar);
+      row.appendChild(bubble);
+      messagesArea.appendChild(row);
+      messagesArea.scrollTop = messagesArea.scrollHeight;
+      return bubble;
+    }
+
+    function showTypingIndicator() {
+      const row = document.createElement('div');
+      row.className = 'message-row bot';
+      row.id = 'typingIndicator';
+
+      const avatar = document.createElement('div');
+      avatar.className = 'avatar';
+      avatar.textContent = '🤖';
+
+      const bubble = document.createElement('div');
+      bubble.className = 'typing-indicator';
+      bubble.innerHTML = `
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+      `;
+
+      row.appendChild(avatar);
+      row.appendChild(bubble);
+      messagesArea.appendChild(row);
+      messagesArea.scrollTop = messagesArea.scrollHeight;
+    }
+
+    function removeTypingIndicator() {
+      const el = document.getElementById('typingIndicator');
+      if (el) el.remove();
+    }
+
+    // Client-side Router Logic
+    function classifyQueryLocally(query) {
+      const hasShipping = SHIPPING_REGEX.test(query);
+      const hasUnrelated = UNRELATED_REGEX.test(query);
+
+      // If distinctly unrelated (even if framed with a pretext like "to plan a pickup I need the weather")
+      if (hasUnrelated) {
+        return "unrelated";
+      }
+      return "shipping";
+    }
+
+    async function callGemini(userMessage) {
+      const apiKey = getApiKey();
+      if (!apiKey) {
+        apiModal.classList.add('active');
+        throw new Error('Please enter your Gemini API Key to chat.');
+      }
+
+      // Format payload for Gemini API
+      const contents = [];
+
+      // Add conversation history
+      for (const turn of history) {
+        contents.push({
+          role: turn.role === 'bot' ? 'model' : 'user',
+          parts: [{ text: turn.text }]
+        });
+      }
+
+      // Add current turn
+      contents.push({
+        role: 'user',
+        parts: [{ text: userMessage }]
+      });
+
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+
+      const payload = {
+        contents: contents,
+        systemInstruction: {
+          parts: [{ text: SYSTEM_INSTRUCTION }]
+        },
+        generationConfig: {
+          temperature: 0.4,
+          maxOutputTokens: 1200
+        }
+      };
+
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error?.message || `HTTP ${res.status}: Failed to reach Gemini API`);
+      }
+
+      const data = await res.json();
+      const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!reply) {
+        throw new Error('Empty response received from model.');
+      }
+      return reply;
+    }
+
+    async function handleSendMessage(text) {
+      const query = text.trim();
+      if (!query) return;
+
+      chatInput.value = '';
+      chatInput.style.height = 'auto';
+      sendBtn.disabled = true;
+
+      // 1. Render User Message
+      appendMessage('user', query);
+
+      // 2. Pre-classifier / Workflow Routing Guardrail
+      const route = classifyQueryLocally(query);
+
+      if (route === 'unrelated') {
+        showTypingIndicator();
+        await new Promise(r => setTimeout(r, 600)); // natural typing pause
+        removeTypingIndicator();
+        appendMessage('bot', DECLINE_MESSAGE);
+        history.push({ role: 'user', text: query });
+        history.push({ role: 'bot', text: DECLINE_MESSAGE });
+        sendBtn.disabled = false;
+        return;
+      }
+
+      // 3. Shipping FAQ Route (Calls Gemini with System Guardrails)
+      showTypingIndicator();
+      try {
+        const reply = await callGemini(query);
+        removeTypingIndicator();
+        appendMessage('bot', reply);
+        history.push({ role: 'user', text: query });
+        history.push({ role: 'bot', text: reply });
+      } catch (err) {
+        removeTypingIndicator();
+        appendMessage('bot', `⚠️ **Error:** ${err.message}`);
+      } finally {
+        sendBtn.disabled = false;
+      }
+    }
+
+    chatForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      handleSendMessage(chatInput.value);
+    });
+  </script>
+</body>
+</html>
