@@ -519,7 +519,7 @@
     <div class="modal-card">
       <h2>🔑 Gemini API Key Required</h2>
       <p>
-        This web chat runs client-side directly against Google's <strong>Gemini 2.5 Flash</strong> model. Your key is stored locally in your browser's <code>localStorage</code> and never sent to any third-party server.
+        This web chat runs client-side directly against Google's <strong>Gemini Flash</strong> model. Your key is stored locally in your browser's <code>localStorage</code> and never sent to any third-party server.
       </p>
       <p>
         Don't have a key? Get one for free at <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: var(--primary);">Google AI Studio</a>.
@@ -762,7 +762,7 @@ Because your question is unrelated to our shipping services, I am unable to assi
         parts: [{ text: userMessage }]
       });
 
-      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`;
 
       const payload = {
         contents: contents,
