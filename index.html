@@ -220,6 +220,9 @@
     .message-bubble li {
       margin-bottom: 4px;
     }
+    .message-bubble li:empty {
+      display: none;
+    }
     .message-bubble strong {
       font-weight: 600;
     }
@@ -559,7 +562,10 @@ CRITICAL INSTRUCTIONS FOR CONVERSATION MEMORY:
 
 4. NO LATEX OR RAW FORMULA DELIMITERS:
    - NEVER use LaTeX formatting, math delimiters ($...$ or $$...$$), or escaped codes (such as \\times, \\frac, \\approx, \\text, \\mathbf).
-   - Always write mathematical expressions and dimensional weight calculations in plain, readable text using standard symbols (e.g., "(24 in × 36 in × 24 in) / 139 = approx 149.2 lbs" and "20,736 cubic inches").`;
+   - Always write mathematical expressions and dimensional weight calculations in plain, readable text using standard symbols (e.g., "(24 in × 36 in × 24 in) / 139 = approx 149.2 lbs" and "20,736 cubic inches").
+
+5. CLEAN LISTS (NO EMPTY BULLETS):
+   - Ensure every bullet point contains meaningful text. Never output trailing, dangling, or empty bullet characters (* or -) without content.`;
 
     const DECLINE_MESSAGE = `Thank you for contacting SwiftShip Customer Support! I specialize exclusively in shipping services, such as shipping rates, package tracking, delivery schedules, and returns. 
 
@@ -681,7 +687,12 @@ Because your question is unrelated to our shipping services, I am unable to assi
         .replace(/\\neq/g, '≠')
         // Remove math dollar delimiters
         .replace(/\$\$([^$]+)\$\$/g, '$1')
-        .replace(/\$([^$\n]+)\$/g, '$1');
+        .replace(/\$([^$\n]+)\$/g, '$1')
+        // Strip dangling/empty markdown bullet points (* or - or + or 1.)
+        .replace(/^\s*([*+-]|\d+\.)\s*$/gm, '')
+        // Clean up excessive blank lines
+        .replace(/\n{3,}/g, '\n\n')
+        .trim();
     }
 
     // Append Message UI
@@ -696,6 +707,13 @@ Because your question is unrelated to our shipping services, I am unable to assi
       const bubble = document.createElement('div');
       bubble.className = 'message-bubble';
       bubble.innerHTML = marked.parse(cleanMathSyntax(text));
+
+      // Remove any rendered empty or whitespace-only list items
+      bubble.querySelectorAll('li').forEach(li => {
+        if (!li.textContent.trim()) {
+          li.remove();
+        }
+      });
 
       row.appendChild(avatar);
       row.appendChild(bubble);

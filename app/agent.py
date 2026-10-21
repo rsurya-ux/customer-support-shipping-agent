@@ -235,6 +235,9 @@ CRITICAL INSTRUCTIONS FOR CONVERSATION MEMORY:
 4. NO LATEX OR RAW FORMULA DELIMITERS:
    - NEVER use LaTeX formatting, math delimiters ($...$ or $$...$$), or escaped codes (such as \\times, \\frac, \\approx, \\text, \\mathbf).
    - Always write mathematical expressions and dimensional weight calculations in plain, readable text using standard keyboard symbols (e.g., "(24 in × 36 in × 24 in) / 139 = approx 149.2 lbs" and "20,736 cubic inches").
+
+5. CLEAN LISTS (NO EMPTY BULLETS):
+   - Ensure every bullet point contains meaningful text. Never output trailing, dangling, or empty bullet characters (* or -) without content.
 """,
 )
 
