@@ -555,7 +555,11 @@ CRITICAL INSTRUCTIONS FOR CONVERSATION MEMORY:
 
 3. CONVERSATIONAL EMPATHY & CLARITY:
    - If a customer mentions they already answered a question or expresses frustration, apologize sincerely, immediately utilize their details, and deliver the answer.
-   - Keep answers structured with bullet points, clean formatting, and clear next steps.`;
+   - Keep answers structured with bullet points, clean formatting, and clear next steps.
+
+4. NO LATEX OR RAW FORMULA DELIMITERS:
+   - NEVER use LaTeX formatting, math delimiters ($...$ or $$...$$), or escaped codes (such as \\times, \\frac, \\approx, \\text, \\mathbf).
+   - Always write mathematical expressions and dimensional weight calculations in plain, readable text using standard symbols (e.g., "(24 in × 36 in × 24 in) / 139 = approx 149.2 lbs" and "20,736 cubic inches").`;
 
     const DECLINE_MESSAGE = `Thank you for contacting SwiftShip Customer Support! I specialize exclusively in shipping services, such as shipping rates, package tracking, delivery schedules, and returns. 
 
@@ -658,6 +662,28 @@ Because your question is unrelated to our shipping services, I am unable to assi
       }
     });
 
+    // Clean up LaTeX formatting and escaped math characters into clean typography
+    function cleanMathSyntax(text) {
+      if (!text) return text;
+      return text
+        // Fractions: \frac{a}{b} -> (a / b)
+        .replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, '($1 / $2)')
+        // Text labels: \text{...} -> ...
+        .replace(/\\text\{([^}]+)\}/g, '$1')
+        // Bold math: \mathbf{...} -> **...**
+        .replace(/\\mathbf\{([^}]+)\}/g, '**$1**')
+        // Symbols
+        .replace(/\\times/g, '×')
+        .replace(/\\approx/g, '≈')
+        .replace(/\\cdot/g, '·')
+        .replace(/\\le(q)?/g, '≤')
+        .replace(/\\ge(q)?/g, '≥')
+        .replace(/\\neq/g, '≠')
+        // Remove math dollar delimiters
+        .replace(/\$\$([^$]+)\$\$/g, '$1')
+        .replace(/\$([^$\n]+)\$/g, '$1');
+    }
+
     // Append Message UI
     function appendMessage(role, text) {
       const row = document.createElement('div');
@@ -669,7 +695,7 @@ Because your question is unrelated to our shipping services, I am unable to assi
 
       const bubble = document.createElement('div');
       bubble.className = 'message-bubble';
-      bubble.innerHTML = marked.parse(text);
+      bubble.innerHTML = marked.parse(cleanMathSyntax(text));
 
       row.appendChild(avatar);
       row.appendChild(bubble);
